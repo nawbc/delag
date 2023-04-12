@@ -1,0 +1,15 @@
+{
+  "name": "@slowify/core-darwin-universal",
+  "version": "0.0.0",
+  "os": [
+    "darwin"
+  ],
+  "main": "core.darwin-universal.node",
+  "files": [
+    "core.darwin-universal.node"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  }
+}

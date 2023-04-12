@@ -1,0 +1,41 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "allowJs": true,
+    "sourceMap": true,
+    "declaration": true,
+    "moduleResolution": "node16",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2015",
+    "removeComments": true,
+    "module": "Node16",
+    "strict": true,
+    "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": false,
+    "pretty": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": false,
+    "skipDefaultLibCheck": true,
+    "noImplicitOverride": true,
+    "strictBindCallApply": false,
+    "noImplicitReturns": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "lib": [
+      "ESNext",
+      "dom",
+      "dom.iterable"
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "tmp/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}
