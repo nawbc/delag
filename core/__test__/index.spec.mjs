@@ -4,8 +4,7 @@ import { createServer } from '../index.js';
 // test('sum from native', (t) => {
 // });
 
-console.log(createServer);
-
 createServer((...args) => {
+  console.log('===================');
   console.log(args);
 });
