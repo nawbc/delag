@@ -1,10 +1,18 @@
 // import test from 'ava';
-import { createServer } from '../index.js';
+import * as rs from '../index.js';
+import { EventEmitter } from 'events';
+// import { } from 'event';
 
 // test('sum from native', (t) => {
 // });
 
-createServer((...args) => {
-  console.log('===================');
-  console.log(args);
+console.log(rs);
+rs.createServer((err, req, res) => {
+  console.log(req);
 });
+
+// class Server extends EventEmitter {
+//   constructor(options, callback) {
+//     this.on('request', callback);
+//   }
+// }

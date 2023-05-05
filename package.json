@@ -1,6 +1,5 @@
 {
   "name": "delag",
-  "type": "commonjs",
   "packageManager": "yarn@3.5.0",
   "version": "0.0.1-alpha0",
   "author": {
@@ -9,11 +8,6 @@
   },
   "workspaces": [
     "core"
-  ],
-  "files": [
-    "third_party",
-    "src",
-    "dist"
   ],
   "license": "Apache-2.0",
   "keywords": [
@@ -26,20 +20,19 @@
     "router",
     "app",
     "api",
-    "fastify"
+    "fastify",
+    "rust",
+    "napi"
   ],
   "devDependencies": {
-    "@types/body-parser": "^1",
-    "@types/cookie-session": "^2",
-    "@types/node": "^18.15.11",
+    "@types/body-parser": "1",
+    "@types/cookie-session": "2",
+    "@types/node": "18",
     "@types/prettier": "^2",
-    "body-parser": "^1.20.2",
-    "cookie-session": "^2.0.0",
+    "body-parser": "1.20.2",
+    "cookie-session": "2.0.0",
     "prettier": "^2.8.7",
-    "tslib": "^2.5.0",
-    "typescript": "^5.0.4"
-  },
-  "dependencies": {
-    "@deskbtm/uws": "20.20.0"
+    "tslib": "2.5.0",
+    "typescript": "5.0.4"
   }
 }

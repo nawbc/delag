@@ -10,16 +10,11 @@ __metadata:
   resolution: "@delag/core@workspace:core"
   dependencies:
     "@napi-rs/cli": ^2.15.2
+    "@types/node": 18
     ava: ^5.1.1
+    typescript: 5.0.4
   languageName: unknown
   linkType: soft
-
-"@deskbtm/uws@npm:20.20.0":
-  version: 20.20.0
-  resolution: "@deskbtm/uws@npm:20.20.0"
-  checksum: c5ad79dcaab4283fd3a4df8fb2130ea61e7690151debb7ab40aa2c2f3d9ed093ca4b714015b4f8dd87b7d48786a1b6691cd48fcb8780043c3b78f05eeae92139
-  languageName: node
-  linkType: hard
 
 "@gar/promisify@npm:^1.1.3":
   version: 1.1.3
@@ -91,7 +86,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/body-parser@npm:*, @types/body-parser@npm:^1":
+"@types/body-parser@npm:*, @types/body-parser@npm:1":
   version: 1.19.2
   resolution: "@types/body-parser@npm:1.19.2"
   dependencies:
@@ -110,7 +105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/cookie-session@npm:^2":
+"@types/cookie-session@npm:2":
   version: 2.0.44
   resolution: "@types/cookie-session@npm:2.0.44"
   dependencies:
@@ -157,10 +152,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^18.15.11":
+"@types/node@npm:*":
   version: 18.15.11
   resolution: "@types/node@npm:18.15.11"
   checksum: 977b4ad04708897ff0eb049ecf82246d210939c82461922d20f7d2dcfd81bbc661582ba3af28869210f7e8b1934529dcd46bff7d448551400f9d48b9d3bddec3
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:18":
+  version: 18.16.4
+  resolution: "@types/node@npm:18.16.4"
+  checksum: 21d575391c88be9f3568675de59d571597cfc122efa32939ae2697c2218c6ccfb6ba0d4b5d9301905e6c4964f43add42569249b15d2e12d68b0aedaf891ec9a5
   languageName: node
   linkType: hard
 
@@ -426,7 +428,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"body-parser@npm:^1.20.2":
+"body-parser@npm:1.20.2":
   version: 1.20.2
   resolution: "body-parser@npm:1.20.2"
   dependencies:
@@ -716,7 +718,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie-session@npm:^2.0.0":
+"cookie-session@npm:2.0.0":
   version: 2.0.0
   resolution: "cookie-session@npm:2.0.0"
   dependencies:
@@ -806,16 +808,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "delag@workspace:."
   dependencies:
-    "@deskbtm/uws": 20.20.0
-    "@types/body-parser": ^1
-    "@types/cookie-session": ^2
-    "@types/node": ^18.15.11
+    "@types/body-parser": 1
+    "@types/cookie-session": 2
+    "@types/node": 18
     "@types/prettier": ^2
-    body-parser: ^1.20.2
-    cookie-session: ^2.0.0
+    body-parser: 1.20.2
+    cookie-session: 2.0.0
     prettier: ^2.8.7
-    tslib: ^2.5.0
-    typescript: ^5.0.4
+    tslib: 2.5.0
+    typescript: 5.0.4
   languageName: unknown
   linkType: soft
 
@@ -2305,7 +2306,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.5.0":
+"tslib@npm:2.5.0":
   version: 2.5.0
   resolution: "tslib@npm:2.5.0"
   checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1
@@ -2336,7 +2337,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.0.4":
+"typescript@npm:5.0.4":
   version: 5.0.4
   resolution: "typescript@npm:5.0.4"
   bin:
@@ -2346,7 +2347,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^5.0.4#~builtin<compat/typescript>":
+"typescript@patch:typescript@5.0.4#~builtin<compat/typescript>":
   version: 5.0.4
   resolution: "typescript@patch:typescript@npm%3A5.0.4#~builtin<compat/typescript>::version=5.0.4&hash=85af82"
   bin:
