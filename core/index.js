@@ -252,6 +252,6 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { createServer } = nativeBinding
+const { startServer } = nativeBinding
 
-module.exports.createServer = createServer
+module.exports.startServer = startServer
