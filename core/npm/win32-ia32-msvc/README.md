@@ -1,3 +1,3 @@
-# `@slowify/core-win32-ia32-msvc`
+# `@delag/core-win32-ia32-msvc`
 
-This is the **i686-pc-windows-msvc** binary for `@slowify/core`
+This is the **i686-pc-windows-msvc** binary for `@delag/core`

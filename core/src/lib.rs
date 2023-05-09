@@ -118,6 +118,7 @@ pub fn start_server(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
               // let status = js_fn.call(Ok(js_request), ThreadsafeFunctionCallMode::NonBlocking);
 
               let a = js_fn.call_async::<String>(Ok(js_request)).await;
+              // let b = js_fn.refer(env).unwrap_or(());
               // let a = a.unwrap().await;
 
               // dbg!(a);

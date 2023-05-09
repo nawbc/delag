@@ -1,3 +1,3 @@
-# `@slowify/core-android-arm64`
+# `@delag/core-android-arm64`
 
-This is the **aarch64-linux-android** binary for `@slowify/core`
+This is the **aarch64-linux-android** binary for `@delag/core`

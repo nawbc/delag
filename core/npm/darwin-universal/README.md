@@ -1,3 +1,3 @@
-# `@slowify/core-darwin-universal`
+# `@delag/core-darwin-universal`
 
-This is the **universal-apple-darwin** binary for `@slowify/core`
+This is the **universal-apple-darwin** binary for `@delag/core`

@@ -1,5 +1,5 @@
 {
-  "name": "@slowify/core-linux-x64-musl",
+  "name": "@delag/core-linux-x64-musl",
   "version": "0.0.0",
   "os": [
     "linux"

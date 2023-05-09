@@ -1,3 +1,3 @@
-# `@slowify/core-darwin-x64`
+# `@delag/core-darwin-x64`
 
-This is the **x86_64-apple-darwin** binary for `@slowify/core`
+This is the **x86_64-apple-darwin** binary for `@delag/core`

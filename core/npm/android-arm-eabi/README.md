@@ -1,3 +1,3 @@
-# `@slowify/core-android-arm-eabi`
+# `@delag/core-android-arm-eabi`
 
-This is the **armv7-linux-androideabi** binary for `@slowify/core`
+This is the **armv7-linux-androideabi** binary for `@delag/core`

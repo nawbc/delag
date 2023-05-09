@@ -1,3 +1,3 @@
-# `@slowify/core-linux-arm-gnueabihf`
+# `@delag/core-linux-arm-gnueabihf`
 
-This is the **armv7-unknown-linux-gnueabihf** binary for `@slowify/core`
+This is the **armv7-unknown-linux-gnueabihf** binary for `@delag/core`

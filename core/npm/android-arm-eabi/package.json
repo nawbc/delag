@@ -1,5 +1,5 @@
 {
-  "name": "@slowify/core-android-arm-eabi",
+  "name": "@delag/core-android-arm-eabi",
   "version": "0.0.0",
   "os": [
     "android"

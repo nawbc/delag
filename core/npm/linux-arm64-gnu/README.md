@@ -1,3 +1,3 @@
-# `@slowify/core-linux-arm64-gnu`
+# `@delag/core-linux-arm64-gnu`
 
-This is the **aarch64-unknown-linux-gnu** binary for `@slowify/core`
+This is the **aarch64-unknown-linux-gnu** binary for `@delag/core`

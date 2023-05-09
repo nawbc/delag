@@ -1,5 +1,5 @@
 {
-  "name": "@slowify/core-darwin-universal",
+  "name": "@delag/core-darwin-universal",
   "version": "0.0.0",
   "os": [
     "darwin"

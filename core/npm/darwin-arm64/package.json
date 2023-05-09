@@ -1,5 +1,5 @@
 {
-  "name": "@slowify/core-darwin-arm64",
+  "name": "@delag/core-darwin-arm64",
   "version": "0.0.0",
   "os": [
     "darwin"

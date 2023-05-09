@@ -1,5 +1,5 @@
 {
-  "name": "@slowify/core-linux-arm64-gnu",
+  "name": "@delag/core-linux-arm64-gnu",
   "version": "0.0.0",
   "os": [
     "linux"
