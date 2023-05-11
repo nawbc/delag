@@ -49,19 +49,19 @@
     "version": "napi version"
   },
   "optionalDependencies": {
-    "@delag/core-win32-x64-msvc": "0.0.0",
-    "@delag/core-darwin-x64": "0.0.0",
-    "@delag/core-linux-x64-gnu": "0.0.0",
-    "@delag/core-darwin-arm64": "0.0.0",
+    "@delag/core-android-arm-eabi": "0.0.0",
     "@delag/core-android-arm64": "0.0.0",
+    "@delag/core-darwin-arm64": "0.0.0",
+    "@delag/core-darwin-universal": "0.0.0",
+    "@delag/core-darwin-x64": "0.0.0",
+    "@delag/core-freebsd-x64": "0.0.0",
+    "@delag/core-linux-arm-gnueabihf": "0.0.0",
     "@delag/core-linux-arm64-gnu": "0.0.0",
     "@delag/core-linux-arm64-musl": "0.0.0",
-    "@delag/core-win32-arm64-msvc": "0.0.0",
-    "@delag/core-linux-arm-gnueabihf": "0.0.0",
+    "@delag/core-linux-x64-gnu": "0.0.0",
     "@delag/core-linux-x64-musl": "0.0.0",
-    "@delag/core-freebsd-x64": "0.0.0",
+    "@delag/core-win32-arm64-msvc": "0.0.0",
     "@delag/core-win32-ia32-msvc": "0.0.0",
-    "@delag/core-android-arm-eabi": "0.0.0",
-    "@delag/core-darwin-universal": "0.0.0"
+    "@delag/core-win32-x64-msvc": "0.0.0"
   }
 }
