@@ -252,6 +252,6 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { startServer } = nativeBinding
+const { serve } = nativeBinding
 
-module.exports.startServer = startServer
+module.exports.serve = serve

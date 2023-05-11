@@ -29,8 +29,6 @@ pub struct JsSocket {}
 fn headers_2_hashmap(headers: &HeaderMap) -> HashMap<String, String> {
   let mut header_hashmap = HashMap::new();
 
-  let a = String::from("value") + &"111";
-
   for (k, v) in headers {
     let k = k.as_str().to_owned();
     let v = String::from_utf8_lossy(v.as_bytes()).into_owned();
@@ -42,7 +40,7 @@ fn headers_2_hashmap(headers: &HeaderMap) -> HashMap<String, String> {
 #[napi(object)]
 pub struct JsResponse {
   pub data: String,
-  pub headers: serde_json::Map<String, serde_json::Value>,
+  pub headers: Option<serde_json::Map<String, serde_json::Value>>,
 }
 
 // #[napi]
@@ -53,21 +51,13 @@ pub struct JsResponse {
 //   // Ok::<_, Infallible>(res.body(js_res.data))
 // }
 
-enum ArgumentsType {
-  Function(JsFunction),
-  Object(JsObject),
-}
-
 #[napi]
-pub fn start_server(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
-  let js_fn: ThreadsafeFunction<_, ErrorStrategy::CalleeHandled> = callback
+pub fn serve(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
+  let ts_fn: ThreadsafeFunction<_, ErrorStrategy::CalleeHandled> = callback
     .create_threadsafe_function(0, |ctx: ThreadSafeCallContext<JsRequest>| {
       let req = ctx.value;
 
-      // let version = format!("{:?}", &parts.version);
       let mut js_req = ctx.env.create_object()?;
-      // let mut js_socket = ctx.env.create_object()?;
-
       let headers = headers_2_hashmap(&req.headers);
 
       js_req.set("uri", req.uri)?;
@@ -76,10 +66,9 @@ pub fn start_server(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
       js_req.set("version", req.version)?;
 
       let res_fn = ctx.env.create_function_from_closure("demo", move |ctx| {
-        // dbg!(ctx.get::<String>(0));
-        // dbg!(ctx.length);
         Ok(format!("arguments length: {}", ctx.length))
       })?;
+
       js_req.set("callback", res_fn)?;
 
       Ok::<Vec<_>, napi::Error>(vec![js_req])
@@ -89,7 +78,7 @@ pub fn start_server(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
   let start = async {
     Server::build()
       .bind("hello-world", ("127.0.0.1", 8080), move || {
-        let js_fn = js_fn.clone();
+        let ts_fn = ts_fn.clone();
 
         HttpService::build()
           .client_request_timeout(Duration::from_secs(1))
@@ -98,15 +87,11 @@ pub fn start_server(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
             ext.insert(42u32);
           })
           .finish(move |req: Request| {
-            let js_fn = js_fn.clone();
+            let ts_fn = ts_fn.clone();
             async move {
               let (parts, body) = req.into_parts();
               let headers = parts.headers.clone();
               let (_, size) = body.size_hint();
-
-              // let socket_addr = parts.peer_addr.unwrap();
-
-              // socket_addr.ip().to_string();
 
               let js_request = JsRequest {
                 method: parts.method.to_string(),
@@ -115,32 +100,17 @@ pub fn start_server(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
                 version: format!("{:?}", &parts.version),
               };
 
-              // let status = js_fn.call(Ok(js_request), ThreadsafeFunctionCallMode::NonBlocking);
+              ts_fn.call_with_return_value(
+                Ok(js_request),
+                ThreadsafeFunctionCallMode::NonBlocking,
+                |js_res: JsResponse| Ok(()),
+              );
 
-              let a = js_fn.call_async::<String>(Ok(js_request)).await;
-              // let b = js_fn.refer(env).unwrap_or(());
-              // let a = a.unwrap().await;
-
-              // dbg!(a);
-
-              // js_fn.call_with_return_value(
-              //   Ok(js_request),
-              //   ThreadsafeFunctionCallMode::NonBlocking,
-              //   |value: Promise<String>| {
-              //     // dbg!(value);
-              //     // async move {
-              //     //   Ok::<_, Infallible>(())
-              //     // }
-              //     // let r = value.await;
-              //     Ok(())
-              //   },
-              // );
-
-              // dbg!("=================");
+              // let js_res = ts_fn.call_async::<JsResponse>(Ok(js_request)).await;
 
               let mut res = Response::build(StatusCode::OK);
 
-              Ok::<_, Infallible>(res.body("1111111"))
+              Ok::<_, Infallible>(res.body("1111"))
             }
           })
           .tcp_auto_h2c()

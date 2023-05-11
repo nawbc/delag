@@ -5,6 +5,6 @@
 
 export interface JsResponse {
   data: string
-  headers: Record<string, any>
+  headers?: Record<string, any>
 }
-export function startServer(callback: (...args: any[]) => any): object
+export function serve(callback: (...args: any[]) => any): object

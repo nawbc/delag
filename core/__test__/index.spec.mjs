@@ -1,33 +1,33 @@
 // import test from 'ava';
-import * as rs from '../index.js';
+import * as Delag from '../index.js';
 import { EventEmitter } from 'events';
-// import { } from 'event';
+import { Readable, Writable } from 'stream';
 
-// test('sum from native', (t) => {
-// });
+// class Response extends Write {}
 
-console.log(rs);
-rs.startServer((err, req, res) => {
-  // console.log(req);
+Delag.serve((err, req) => {
+  let r = req;
 
-  // req.callback('1231321');
+  // console.debug(r);
 
-  // await new Promise((resolve, reject) => {
-  //   setTimeout(resolve, 5000);
-  // });
-
-  return '1111';
-
-  // rs.response({
-  //   data: 'demo',
-  //   headers: {
-  //     Cookie: 'Demo',
-  //   },
-  // });
+  return {
+    data: 'Hello, World',
+    headers: {
+      Cookie: 'xxx=xxxx',
+    },
+  };
 });
 
-// class Server extends EventEmitter {
-//   constructor(options, callback) {
-//     this.on('request', callback);
-//   }
-// }
+class IncomingMessage extends Readable {}
+
+class OutgoingMessage extends Writable {}
+
+class Server extends EventEmitter {
+  constructor(options, callback) {
+    super();
+
+    this.on('request', callback);
+  }
+
+  listen() {}
+}
