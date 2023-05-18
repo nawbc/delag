@@ -1,14 +1,11 @@
 use actix_http::{header::HeaderMap, HttpService, Request, Response, StatusCode};
 use actix_server::Server;
-
-use futures::Stream;
 use napi::{
-  threadsafe_function::{
-    ErrorStrategy, ThreadSafeCallContext, ThreadsafeFunction, ThreadsafeFunctionCallMode,
-  },
+  threadsafe_function::{ErrorStrategy, ThreadSafeCallContext, ThreadsafeFunction},
   Env, JsFunction, JsObject,
 };
 
+#[allow(unused_imports)]
 use napi::bindgen_prelude::*;
 
 use std::{collections::HashMap, convert::Infallible, time::Duration};
@@ -37,19 +34,22 @@ fn headers_2_hashmap(headers: &HeaderMap) -> HashMap<String, String> {
   header_hashmap
 }
 
+pub enum ResponseBodyType {
+  String(String),
+  Buffer(),
+}
+
 #[napi(object)]
 pub struct JsResponse {
-  pub data: String,
+  pub body: String,
   pub headers: Option<serde_json::Map<String, serde_json::Value>>,
 }
 
-// #[napi]
-// pub fn response(js_res: JsResponse) -> napi::Result<JsObject> {
-//   let mut res = Response::build(StatusCode::OK);
-//   // res.insert_header(("x-head", HeaderValue::from_static("dummy value!")));
-
-//   // Ok::<_, Infallible>(res.body(js_res.data))
-// }
+#[napi(object)]
+pub struct ServerOptions {
+  pub port: i32,
+  pub host: String,
+}
 
 #[napi]
 pub fn serve(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
@@ -65,12 +65,6 @@ pub fn serve(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
       js_req.set("method", req.method)?;
       js_req.set("version", req.version)?;
 
-      let res_fn = ctx.env.create_function_from_closure("demo", move |ctx| {
-        Ok(format!("arguments length: {}", ctx.length))
-      })?;
-
-      js_req.set("callback", res_fn)?;
-
       Ok::<Vec<_>, napi::Error>(vec![js_req])
     })
     .unwrap();
@@ -78,7 +72,7 @@ pub fn serve(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
   let start = async {
     Server::build()
       .bind("hello-world", ("127.0.0.1", 8080), move || {
-        let ts_fn = ts_fn.clone();
+        let ts_fn: ThreadsafeFunction<JsRequest> = ts_fn.clone();
 
         HttpService::build()
           .client_request_timeout(Duration::from_secs(1))
@@ -91,7 +85,8 @@ pub fn serve(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
             async move {
               let (parts, body) = req.into_parts();
               let headers = parts.headers.clone();
-              let (_, size) = body.size_hint();
+              // let (_, size) = body.size_hint();
+              
 
               let js_request = JsRequest {
                 method: parts.method.to_string(),
@@ -100,17 +95,11 @@ pub fn serve(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
                 version: format!("{:?}", &parts.version),
               };
 
-              ts_fn.call_with_return_value(
-                Ok(js_request),
-                ThreadsafeFunctionCallMode::NonBlocking,
-                |js_res: JsResponse| Ok(()),
-              );
-
-              // let js_res = ts_fn.call_async::<JsResponse>(Ok(js_request)).await;
+              let js_res = ts_fn.call_async::<JsResponse>(Ok(js_request)).await;
 
               let mut res = Response::build(StatusCode::OK);
 
-              Ok::<_, Infallible>(res.body("1111"))
+              Ok::<_, Infallible>(res.body(js_res.unwrap().body))
             }
           })
           .tcp_auto_h2c()
