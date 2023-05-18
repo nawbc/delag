@@ -5,14 +5,141 @@ __metadata:
   version: 6
   cacheKey: 8
 
+"@delag/core-android-arm-eabi@0.0.0, @delag/core-android-arm-eabi@workspace:core/npm/android-arm-eabi":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-android-arm-eabi@workspace:core/npm/android-arm-eabi"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-android-arm64@0.0.0, @delag/core-android-arm64@workspace:core/npm/android-arm64":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-android-arm64@workspace:core/npm/android-arm64"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-darwin-arm64@0.0.0, @delag/core-darwin-arm64@workspace:core/npm/darwin-arm64":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-darwin-arm64@workspace:core/npm/darwin-arm64"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-darwin-universal@0.0.0, @delag/core-darwin-universal@workspace:core/npm/darwin-universal":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-darwin-universal@workspace:core/npm/darwin-universal"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-darwin-x64@0.0.0, @delag/core-darwin-x64@workspace:core/npm/darwin-x64":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-darwin-x64@workspace:core/npm/darwin-x64"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-freebsd-x64@0.0.0, @delag/core-freebsd-x64@workspace:core/npm/freebsd-x64":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-freebsd-x64@workspace:core/npm/freebsd-x64"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-linux-arm-gnueabihf@0.0.0, @delag/core-linux-arm-gnueabihf@workspace:core/npm/linux-arm-gnueabihf":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-linux-arm-gnueabihf@workspace:core/npm/linux-arm-gnueabihf"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-linux-arm64-gnu@0.0.0, @delag/core-linux-arm64-gnu@workspace:core/npm/linux-arm64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-linux-arm64-gnu@workspace:core/npm/linux-arm64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-linux-arm64-musl@0.0.0, @delag/core-linux-arm64-musl@workspace:core/npm/linux-arm64-musl":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-linux-arm64-musl@workspace:core/npm/linux-arm64-musl"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-linux-x64-gnu@0.0.0, @delag/core-linux-x64-gnu@workspace:core/npm/linux-x64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-linux-x64-gnu@workspace:core/npm/linux-x64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-linux-x64-musl@0.0.0, @delag/core-linux-x64-musl@workspace:core/npm/linux-x64-musl":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-linux-x64-musl@workspace:core/npm/linux-x64-musl"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-win32-arm64-msvc@0.0.0, @delag/core-win32-arm64-msvc@workspace:core/npm/win32-arm64-msvc":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-win32-arm64-msvc@workspace:core/npm/win32-arm64-msvc"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-win32-ia32-msvc@0.0.0, @delag/core-win32-ia32-msvc@workspace:core/npm/win32-ia32-msvc":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-win32-ia32-msvc@workspace:core/npm/win32-ia32-msvc"
+  languageName: unknown
+  linkType: soft
+
+"@delag/core-win32-x64-msvc@0.0.0, @delag/core-win32-x64-msvc@workspace:core/npm/win32-x64-msvc":
+  version: 0.0.0-use.local
+  resolution: "@delag/core-win32-x64-msvc@workspace:core/npm/win32-x64-msvc"
+  languageName: unknown
+  linkType: soft
+
 "@delag/core@workspace:core":
   version: 0.0.0-use.local
   resolution: "@delag/core@workspace:core"
   dependencies:
+    "@delag/core-android-arm-eabi": 0.0.0
+    "@delag/core-android-arm64": 0.0.0
+    "@delag/core-darwin-arm64": 0.0.0
+    "@delag/core-darwin-universal": 0.0.0
+    "@delag/core-darwin-x64": 0.0.0
+    "@delag/core-freebsd-x64": 0.0.0
+    "@delag/core-linux-arm-gnueabihf": 0.0.0
+    "@delag/core-linux-arm64-gnu": 0.0.0
+    "@delag/core-linux-arm64-musl": 0.0.0
+    "@delag/core-linux-x64-gnu": 0.0.0
+    "@delag/core-linux-x64-musl": 0.0.0
+    "@delag/core-win32-arm64-msvc": 0.0.0
+    "@delag/core-win32-ia32-msvc": 0.0.0
+    "@delag/core-win32-x64-msvc": 0.0.0
     "@napi-rs/cli": ^2.15.2
     "@types/node": 18
     ava: ^5.1.1
     typescript: 5.0.4
+  dependenciesMeta:
+    "@delag/core-android-arm-eabi":
+      optional: true
+    "@delag/core-android-arm64":
+      optional: true
+    "@delag/core-darwin-arm64":
+      optional: true
+    "@delag/core-darwin-universal":
+      optional: true
+    "@delag/core-darwin-x64":
+      optional: true
+    "@delag/core-freebsd-x64":
+      optional: true
+    "@delag/core-linux-arm-gnueabihf":
+      optional: true
+    "@delag/core-linux-arm64-gnu":
+      optional: true
+    "@delag/core-linux-arm64-musl":
+      optional: true
+    "@delag/core-linux-x64-gnu":
+      optional: true
+    "@delag/core-linux-x64-musl":
+      optional: true
+    "@delag/core-win32-arm64-msvc":
+      optional: true
+    "@delag/core-win32-ia32-msvc":
+      optional: true
+    "@delag/core-win32-x64-msvc":
+      optional: true
   languageName: unknown
   linkType: soft
 
