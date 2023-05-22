@@ -1,0 +1,6 @@
+* text=auto
+
+# Require Unix line endings
+* text eol=lf
+
+* linguist-language=rust

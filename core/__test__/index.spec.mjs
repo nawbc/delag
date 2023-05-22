@@ -10,11 +10,9 @@ import { createServer } from 'node:http';
 
 const server = createServer();
 
-let d = server.listen(0, () => {
-  
-});
+let d = server.listen(0, (err) => {});
 
-Delag.serve((err, req) => {
+Delag.serve({ port: 8080, host: '::' }, (err, req) => {
   return {
     body: 'Hello, World',
     headers: {

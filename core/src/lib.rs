@@ -1,14 +1,26 @@
 use actix_http::{header::HeaderMap, HttpService, Request, Response, StatusCode};
 use actix_server::Server;
+use actix_web::web::{BytesMut, Query};
+#[allow(unused_imports)]
+use futures_core::Stream as _;
+use futures_util::StreamExt as _;
 use napi::{
   threadsafe_function::{ErrorStrategy, ThreadSafeCallContext, ThreadsafeFunction},
   Env, JsFunction, JsObject,
 };
 
+// use futures_util::StreamExt as _;
+// use futures_util::StreamExt as _;
 #[allow(unused_imports)]
 use napi::bindgen_prelude::*;
 
-use std::{collections::HashMap, convert::Infallible, time::Duration};
+use std::{
+  collections::HashMap,
+  convert::Infallible,
+  net::SocketAddr,
+  sync::{Arc, Mutex},
+  time::Duration,
+};
 
 #[macro_use]
 extern crate napi_derive;
@@ -18,7 +30,7 @@ pub struct JsRequest {
   pub method: String,
   pub uri: String,
   pub version: String,
-  // pub payload: Arc<Mutex<Payload>>,
+  // pub payload: Payload,
 }
 
 pub struct JsSocket {}
@@ -46,13 +58,13 @@ pub struct JsResponse {
 }
 
 #[napi(object)]
-pub struct ServerOptions {
-  pub port: i32,
+pub struct ListenOptions {
+  pub port: u16,
   pub host: String,
 }
 
 #[napi]
-pub fn serve(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
+pub fn serve(env: Env, options: ListenOptions, callback: JsFunction) -> napi::Result<JsObject> {
   let ts_fn: ThreadsafeFunction<_, ErrorStrategy::CalleeHandled> = callback
     .create_threadsafe_function(0, |ctx: ThreadSafeCallContext<JsRequest>| {
       let req = ctx.value;
@@ -65,13 +77,25 @@ pub fn serve(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
       js_req.set("method", req.method)?;
       js_req.set("version", req.version)?;
 
+      let a = Query::<HashMap<String, String>>::from_query("");
+
+      if let Ok(Query(q)) = a {
+        js_req.set("query", q)?;
+      }
+
+      // js_req.set("query", val);
+
       Ok::<Vec<_>, napi::Error>(vec![js_req])
     })
     .unwrap();
 
-  let start = async {
+  let start = async move {
+    let ListenOptions { host, port } = options;
+
+    let addr = (host.as_str(), port);
+
     Server::build()
-      .bind("hello-world", ("127.0.0.1", 8080), move || {
+      .bind("hello-world", addr, move || {
         let ts_fn: ThreadsafeFunction<JsRequest> = ts_fn.clone();
 
         HttpService::build()
@@ -81,22 +105,33 @@ pub fn serve(env: Env, callback: JsFunction) -> napi::Result<JsObject> {
             ext.insert(42u32);
           })
           .finish(move |req: Request| {
+            dbg!(&req);
             let ts_fn = ts_fn.clone();
             async move {
-              let (parts, body) = req.into_parts();
+              let (parts, mut payload) = req.into_parts();
               let headers = parts.headers.clone();
-              // let (_, size) = body.size_hint();
-              
+              // let (_, size) = payload.size_hint();
+              // let size = size.unwrap() as i64;
+
+              let mut body = BytesMut::new();
+
+              while let Some(item) = payload.next().await {
+                body.extend_from_slice(&item.unwrap());
+              }
+
+              let a = format!("{:?}", body);
+
+              dbg!(a);
 
               let js_request = JsRequest {
                 method: parts.method.to_string(),
                 uri: parts.uri.to_string(),
                 headers: headers,
                 version: format!("{:?}", &parts.version),
+                // payload: ,
               };
 
               let js_res = ts_fn.call_async::<JsResponse>(Ok(js_request)).await;
-
               let mut res = Response::build(StatusCode::OK);
 
               Ok::<_, Infallible>(res.body(js_res.unwrap().body))

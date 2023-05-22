@@ -3,19 +3,23 @@
 
 import { EventEmitter } from 'events';
 import * as DelagCore from '../../index';
-import { Readable } from 'stream';
-import * as http from 'node:http';
+import { Readable, Writable } from 'stream';
 import { DealgListenOptions } from './http.interface';
 import { is } from '../gadget';
+import { debuglog } from 'node:util';
+
+let debug = debuglog('delag:http');
 
 class IncomingMessage extends Readable {}
 
-const DEFAULT_IPV4_ADDR = '0.0.0.0';
-const DEFAULT_IPV6_ADDR = '::';
-const DEFAULT_PORT = 80;
+class OutgoingMessage extends Writable {}
 
-class Server extends EventEmitter {
+export class Server extends EventEmitter {
   private _server;
+
+  static DEFAULT_IPV4_ADDR = '0.0.0.0';
+  static DEFAULT_IPV6_ADDR = '::';
+  static DEFAULT_PORT = 80;
 
   constructor(options, callback) {
     super();
@@ -23,10 +27,10 @@ class Server extends EventEmitter {
     this.on('request', callback);
   }
 
-  private normalizeParams(p: any) {
+  private normalizeParams(p: any): [DealgListenOptions, (() => void) | null] {
     let options: DealgListenOptions = {
-      port: DEFAULT_PORT, //
-      host: DEFAULT_IPV6_ADDR,
+      port: Server.DEFAULT_PORT,
+      host: Server.DEFAULT_IPV6_ADDR,
     };
 
     if (void 0 == p) {
@@ -49,7 +53,7 @@ class Server extends EventEmitter {
 
     const cb = p[p.length - 1];
 
-    let arr: [DealgListenOptions, (() => void) | null];
+    let arr;
 
     if (!is.function(cb)) {
       arr = [options, null];
@@ -76,10 +80,22 @@ class Server extends EventEmitter {
   public listen(options: DealgListenOptions, listener?: () => void): this;
   public listen(...params): this {
     const [options, callback] = this.normalizeParams(params);
+    const { port, host } = options as Pick<
+      Required<DealgListenOptions>,
+      'host' | 'port'
+    >;
 
     try {
-      this._server = DelagCore.serve(() => {});
-    } catch (error) {}
+      this._server = DelagCore.serve(
+        {
+          port,
+          host,
+        },
+        (req) => {},
+      );
+    } catch (error) {
+      this.emit('clientError');
+    }
 
     return this;
   }
