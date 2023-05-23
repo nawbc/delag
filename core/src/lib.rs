@@ -1,6 +1,6 @@
 use actix_http::{header::HeaderMap, HttpService, Request, Response, StatusCode};
 use actix_server::Server;
-use actix_web::web::{BytesMut, Query};
+use actix_web::web::BytesMut;
 #[allow(unused_imports)]
 use futures_core::Stream as _;
 use futures_util::StreamExt as _;
@@ -9,18 +9,11 @@ use napi::{
   Env, JsFunction, JsObject,
 };
 
-// use futures_util::StreamExt as _;
-// use futures_util::StreamExt as _;
 #[allow(unused_imports)]
 use napi::bindgen_prelude::*;
+use tokio::net::{TcpListener, TcpStream};
 
-use std::{
-  collections::HashMap,
-  convert::Infallible,
-  net::SocketAddr,
-  sync::{Arc, Mutex},
-  time::Duration,
-};
+use std::{collections::HashMap, convert::Infallible, time::Duration};
 
 #[macro_use]
 extern crate napi_derive;
@@ -77,11 +70,22 @@ pub fn serve(env: Env, options: ListenOptions, callback: JsFunction) -> napi::Re
       js_req.set("method", req.method)?;
       js_req.set("version", req.version)?;
 
-      let a = Query::<HashMap<String, String>>::from_query("");
+      let res_fn = ctx.env.create_function_from_closure("demo", move |ctx| {
+        Ok(format!("arguments length: {}", ctx.length))
+      })?;
 
-      if let Ok(Query(q)) = a {
-        js_req.set("query", q)?;
-      }
+      js_req.set("callback", res_fn)?;
+
+      // tokio::stream;
+      // tokio::stream
+
+      // let a = Query::<HashMap<String, String>>::from_query("");
+
+      // if let Ok(Query(q)) = a {
+      //   js_req.set("query", q)?;
+      // }
+
+      // ctx.env.
 
       // js_req.set("query", val);
 
@@ -113,22 +117,26 @@ pub fn serve(env: Env, options: ListenOptions, callback: JsFunction) -> napi::Re
               // let (_, size) = payload.size_hint();
               // let size = size.unwrap() as i64;
 
-              let mut body = BytesMut::new();
+              // let mut body = BytesMut::new();
 
-              while let Some(item) = payload.next().await {
-                body.extend_from_slice(&item.unwrap());
-              }
+              // env
+              let a = payload.next();
 
-              let a = format!("{:?}", body);
+              // while let Some(item) = payload.next().await {
+              //   // item.
+              //   // body.extend_from_slice(&item.unwrap());
+              // }
 
-              dbg!(a);
+              // let a = format!("{:?}", body);
+
+              // dbg!(a);
 
               let js_request = JsRequest {
                 method: parts.method.to_string(),
                 uri: parts.uri.to_string(),
                 headers: headers,
                 version: format!("{:?}", &parts.version),
-                // payload: ,
+                // payload: payload,
               };
 
               let js_res = ts_fn.call_async::<JsResponse>(Ok(js_request)).await;
@@ -139,6 +147,7 @@ pub fn serve(env: Env, options: ListenOptions, callback: JsFunction) -> napi::Re
           })
           .tcp_auto_h2c()
       })?
+      .workers(16)
       .run()
       .await?;
 

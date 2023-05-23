@@ -10,7 +10,11 @@ import { debuglog } from 'node:util';
 
 let debug = debuglog('delag:http');
 
-class IncomingMessage extends Readable {}
+class IncomingMessage extends Readable {
+  constructor(req) {
+    super();
+  }
+}
 
 class OutgoingMessage extends Writable {}
 
@@ -27,6 +31,7 @@ export class Server extends EventEmitter {
     this.on('request', callback);
   }
 
+  // Copyright Joyent, Inc. and other Node contributors.
   private normalizeParams(p: any): [DealgListenOptions, (() => void) | null] {
     let options: DealgListenOptions = {
       port: Server.DEFAULT_PORT,
