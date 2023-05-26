@@ -2,11 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter } from 'events';
-import * as DelagCore from '../../index';
+import * as RsDelag from '../../index';
 import { Readable, Writable } from 'stream';
 import { DealgListenOptions } from './http.interface';
 import { is } from '../gadget';
 import { debuglog } from 'node:util';
+// import { createServer } from 'node:http';
+//  function createServer<
+//    Request extends typeof IncomingMessage = typeof IncomingMessage,
+//    Response extends typeof ServerResponse = typeof ServerResponse,
+//  >(
+//    requestListener?: RequestListener<Request, Response>,
+//  ): Server<Request, Response>;
+//  function createServer<
+//    Request extends typeof IncomingMessage = typeof IncomingMessage,
+//    Response extends typeof ServerResponse = typeof ServerResponse,
+//  >(
+//    options: ServerOptions<Request, Response>,
+//    requestListener?: RequestListener<Request, Response>,
+//  ): Server<Request, Response>;
 
 let debug = debuglog('delag:http');
 
@@ -27,8 +41,6 @@ export class Server extends EventEmitter {
 
   constructor(options, callback) {
     super();
-
-    this.on('request', callback);
   }
 
   // Copyright Joyent, Inc. and other Node contributors.
@@ -91,17 +103,28 @@ export class Server extends EventEmitter {
     >;
 
     try {
-      this._server = DelagCore.serve(
+      this._server = RsDelag.serve(
         {
           port,
           host,
         },
-        (req) => {},
+        (req) => {
+          console.log(req, '=========');
+          this.emit('request', req);
+
+          return {
+            body: 'demo',
+          };
+        },
       );
     } catch (error) {
-      this.emit('clientError');
+      this.emit('clientError', error);
     }
 
     return this;
   }
 }
+
+export const createServer = function name(
+  requestListener: (req, res) => any,
+) {};

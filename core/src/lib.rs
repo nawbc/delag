@@ -1,158 +1,123 @@
-use actix_http::{header::HeaderMap, HttpService, Request, Response, StatusCode};
-use actix_server::Server;
-use actix_web::web::BytesMut;
-#[allow(unused_imports)]
-use futures_core::Stream as _;
-use futures_util::StreamExt as _;
+#![deny(clippy::all)]
+
+mod tokio_threads_runtime;
+
+use http_body_util::{combinators::BoxBody, BodyExt, Full};
+use hyper::{
+  body::{Body, Bytes},
+  server::conn::http1,
+  service::service_fn,
+  Request, Response,
+};
+use std::net::{IpAddr, SocketAddr};
+use tokio_threads_runtime::{create_multi_threads_runtime, RT};
+
 use napi::{
   threadsafe_function::{ErrorStrategy, ThreadSafeCallContext, ThreadsafeFunction},
   Env, JsFunction, JsObject,
 };
-
-#[allow(unused_imports)]
-use napi::bindgen_prelude::*;
-use tokio::net::{TcpListener, TcpStream};
-
-use std::{collections::HashMap, convert::Infallible, time::Duration};
+use tokio::net::TcpListener;
 
 #[macro_use]
 extern crate napi_derive;
 
-pub struct JsRequest {
-  pub headers: HeaderMap,
-  pub method: String,
-  pub uri: String,
-  pub version: String,
-  // pub payload: Payload,
-}
-
-pub struct JsSocket {}
-
-fn headers_2_hashmap(headers: &HeaderMap) -> HashMap<String, String> {
-  let mut header_hashmap = HashMap::new();
-
-  for (k, v) in headers {
-    let k = k.as_str().to_owned();
-    let v = String::from_utf8_lossy(v.as_bytes()).into_owned();
-    header_hashmap.entry(k).or_insert(v);
-  }
-  header_hashmap
-}
-
-pub enum ResponseBodyType {
-  String(String),
-  Buffer(),
+fn full<T: Into<Bytes>>(chunk: T) -> BoxBody<Bytes, hyper::Error> {
+  Full::new(chunk.into())
+    .map_err(|never| match never {})
+    .boxed()
 }
 
 #[napi(object)]
-pub struct JsResponse {
-  pub body: String,
-  pub headers: Option<serde_json::Map<String, serde_json::Value>>,
-}
-
-#[napi(object)]
+#[derive(Debug)]
 pub struct ListenOptions {
   pub port: u16,
   pub host: String,
 }
 
+#[napi(object)]
+pub struct JsResponse {
+  pub body: Option<String>,
+  pub headers: Option<serde_json::Map<String, serde_json::Value>>,
+}
+
+type HyperRequest = Request<hyper::body::Incoming>;
+
 #[napi]
 pub fn serve(env: Env, options: ListenOptions, callback: JsFunction) -> napi::Result<JsObject> {
   let ts_fn: ThreadsafeFunction<_, ErrorStrategy::CalleeHandled> = callback
-    .create_threadsafe_function(0, |ctx: ThreadSafeCallContext<JsRequest>| {
-      let req = ctx.value;
+    .create_threadsafe_function(0, |ctx: ThreadSafeCallContext<HyperRequest>| {
+      let (parts, body) = ctx.value.into_parts();
 
-      let mut js_req = ctx.env.create_object()?;
-      let headers = headers_2_hashmap(&req.headers);
+      let version = format!("{:?}", &parts.version);
+      let method = parts.method.as_str();
+      let uri = format!("{}", &parts.uri);
+      let headers = format!("{:?}", &parts.headers);
+      let body_size_hint = body.size_hint().upper().map(|s| s as i64);
+      let body = ctx.env.create_external(body, body_size_hint)?;
+      let mut parts = ctx.env.create_object()?;
 
-      js_req.set("uri", req.uri)?;
-      js_req.set("headers", headers)?;
-      js_req.set("method", req.method)?;
-      js_req.set("version", req.version)?;
+      parts.set("version", version).unwrap();
+      parts.set("uri", uri).unwrap();
+      parts.set("method", method).unwrap();
+      parts.set("headers", headers).unwrap();
+      parts.set("body", body).unwrap();
 
-      let res_fn = ctx.env.create_function_from_closure("demo", move |ctx| {
-        Ok(format!("arguments length: {}", ctx.length))
-      })?;
+      dbg!("==============");
 
-      js_req.set("callback", res_fn)?;
-
-      // tokio::stream;
-      // tokio::stream
-
-      // let a = Query::<HashMap<String, String>>::from_query("");
-
-      // if let Ok(Query(q)) = a {
-      //   js_req.set("query", q)?;
-      // }
-
-      // ctx.env.
-
-      // js_req.set("query", val);
-
-      Ok::<Vec<_>, napi::Error>(vec![js_req])
-    })
-    .unwrap();
+      Ok(vec![parts])
+    })?;
 
   let start = async move {
     let ListenOptions { host, port } = options;
+    let host: IpAddr = host.parse().unwrap();
+    let addr = SocketAddr::from((host, port));
 
-    let addr = (host.as_str(), port);
+    let listener = TcpListener::bind(addr).await?;
 
-    Server::build()
-      .bind("hello-world", addr, move || {
-        let ts_fn: ThreadsafeFunction<JsRequest> = ts_fn.clone();
+    loop {
+      let (stream, _) = listener.accept().await?;
+      let ts_fn = ts_fn.clone();
 
-        HttpService::build()
-          .client_request_timeout(Duration::from_secs(1))
-          .client_disconnect_timeout(Duration::from_secs(1))
-          .on_connect_ext(|_, ext| {
-            ext.insert(42u32);
-          })
-          .finish(move |req: Request| {
-            dbg!(&req);
-            let ts_fn = ts_fn.clone();
-            async move {
-              let (parts, mut payload) = req.into_parts();
-              let headers = parts.headers.clone();
-              // let (_, size) = payload.size_hint();
-              // let size = size.unwrap() as i64;
+      let service = service_fn(move |req: HyperRequest| {
+        let ts_fn = ts_fn.clone();
 
-              // let mut body = BytesMut::new();
+        async move {
+          let js_res = ts_fn
+            .call_async::<Option<JsResponse>>(Ok(req))
+            .await
+            .unwrap();
+          Ok::<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>(Response::new(full(
+            js_res.unwrap().body.unwrap(),
+          )))
+        }
+      });
 
-              // env
-              let a = payload.next();
+      tokio::task::spawn(async move {
+        match http1::Builder::new()
+          .serve_connection(stream, service)
+          .await
+        {
+          Ok(()) => {}
+          Err(_err) => {}
+        }
+      });
+    }
 
-              // while let Some(item) = payload.next().await {
-              //   // item.
-              //   // body.extend_from_slice(&item.unwrap());
-              // }
-
-              // let a = format!("{:?}", body);
-
-              // dbg!(a);
-
-              let js_request = JsRequest {
-                method: parts.method.to_string(),
-                uri: parts.uri.to_string(),
-                headers: headers,
-                version: format!("{:?}", &parts.version),
-                // payload: payload,
-              };
-
-              let js_res = ts_fn.call_async::<JsResponse>(Ok(js_request)).await;
-              let mut res = Response::build(StatusCode::OK);
-
-              Ok::<_, Infallible>(res.body(js_res.unwrap().body))
-            }
-          })
-          .tcp_auto_h2c()
-      })?
-      .workers(16)
-      .run()
-      .await?;
-
-    Ok(())
+    #[allow(unreachable_code)]
+    Ok::<(), napi::Error>(())
   };
+
+  // {
+  //   let mut rt = RT.try_write().unwrap();
+
+  //   if rt.is_none() {
+  //     *rt = create_multi_threads_runtime(None);
+  //   }
+  // }
+
+  // RT.try_read().unwrap().as_ref().unwrap().spawn(start);
+
+  // Ok::<(), napi::Error>(())
 
   env.execute_tokio_future(start, |env, _| env.get_undefined())
 }
