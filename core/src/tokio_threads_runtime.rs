@@ -15,13 +15,9 @@ pub fn create_multi_threads_runtime(threads: Option<usize>) -> Option<Runtime> {
 
 pub static RT: Lazy<RwLock<Option<Runtime>>> = Lazy::new(|| RwLock::new(None));
 
-/// Ensure that the Tokio runtime is initialized.
-/// In windows the Tokio runtime will be dropped when Node env exits.
-/// But in Electron renderer process, the Node env will exits and recreate when the window reloads.
-/// So we need to ensure that the Tokio runtime is initialized when the Node env is created.
-#[cfg(windows)]
+/// Ensure that the Tokio runtime is initialized. If not 
 pub(crate) fn ensure_runtime() {
-  let mut rt = RT.write().unwrap();
+  let mut rt = RT.try_write().unwrap();
   if rt.is_none() {
     *rt = create_multi_threads_runtime(None);
   }
@@ -35,7 +31,7 @@ pub fn spawn<F>(fut: F) -> tokio::task::JoinHandle<F::Output>
 where
   F: 'static + Send + Future<Output = ()>,
 {
-  RT.read().unwrap().as_ref().unwrap().spawn(fut)
+  RT.try_read().unwrap().as_ref().unwrap().spawn(fut)
 }
 
 /// Runs a future to completion
@@ -48,4 +44,4 @@ where
   RT.read().unwrap().as_ref().unwrap().block_on(fut)
 }
 
-// pub fn exec() {}
+

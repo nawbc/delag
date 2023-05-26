@@ -83,6 +83,14 @@ export class Server extends EventEmitter {
 
   public address;
 
+  /**
+   * Start a server listening for connections.
+   *
+   * @param port
+   * @param hostname
+   * @param backlog
+   * @param listener
+   */
   public listen(
     port?: number,
     hostname?: string,
@@ -108,8 +116,7 @@ export class Server extends EventEmitter {
           port,
           host,
         },
-        (req) => {
-          console.log(req, '=========');
+        (err, req) => {
           this.emit('request', req);
 
           return {

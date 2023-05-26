@@ -14,7 +14,7 @@ use tokio_threads_runtime::{create_multi_threads_runtime, RT};
 
 use napi::{
   threadsafe_function::{ErrorStrategy, ThreadSafeCallContext, ThreadsafeFunction},
-  Env, JsFunction, JsObject,
+  JsFunction,
 };
 use tokio::net::TcpListener;
 
@@ -43,7 +43,7 @@ pub struct JsResponse {
 type HyperRequest = Request<hyper::body::Incoming>;
 
 #[napi]
-pub fn serve(env: Env, options: ListenOptions, callback: JsFunction) -> napi::Result<JsObject> {
+pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
   let ts_fn: ThreadsafeFunction<_, ErrorStrategy::CalleeHandled> = callback
     .create_threadsafe_function(0, |ctx: ThreadSafeCallContext<HyperRequest>| {
       let (parts, body) = ctx.value.into_parts();
@@ -61,8 +61,6 @@ pub fn serve(env: Env, options: ListenOptions, callback: JsFunction) -> napi::Re
       parts.set("method", method).unwrap();
       parts.set("headers", headers).unwrap();
       parts.set("body", body).unwrap();
-
-      dbg!("==============");
 
       Ok(vec![parts])
     })?;
@@ -107,17 +105,15 @@ pub fn serve(env: Env, options: ListenOptions, callback: JsFunction) -> napi::Re
     Ok::<(), napi::Error>(())
   };
 
-  // {
-  //   let mut rt = RT.try_write().unwrap();
+  {
+    let mut rt = RT.try_write().unwrap();
 
-  //   if rt.is_none() {
-  //     *rt = create_multi_threads_runtime(None);
-  //   }
-  // }
+    if rt.is_none() {
+      *rt = create_multi_threads_runtime(None);
+    }
+  }
 
-  // RT.try_read().unwrap().as_ref().unwrap().spawn(start);
+  RT.try_read().unwrap().as_ref().unwrap().spawn(start);
 
-  // Ok::<(), napi::Error>(())
-
-  env.execute_tokio_future(start, |env, _| env.get_undefined())
+  Ok::<(), napi::Error>(())
 }
