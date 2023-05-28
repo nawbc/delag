@@ -36,7 +36,6 @@ import { Readable, Writable } from 'stream';
 //   //   .listen(8080);
 // }
 Delag.serve({ port: 8080, host: '127.0.0.1' }, (err, req) => {
-  console.log(req);
   return {
     body: 'Hello, World',
     headers: {

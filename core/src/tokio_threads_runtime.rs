@@ -1,26 +1,33 @@
+#![deny(clippy::all)]
+
 use std::{future::Future, sync::RwLock};
 
 use once_cell::sync::Lazy;
 use tokio::runtime::Runtime;
 
-pub fn create_multi_threads_runtime(threads: Option<usize>) -> Option<Runtime> {
-  let runtime = tokio::runtime::Builder::new_multi_thread()
-    .worker_threads(threads.unwrap_or(num_cpus::get_physical()))
-    .enable_all()
-    .build()
-    .expect("Tokio create multi thread failed");
+static RT: Lazy<RwLock<Option<Runtime>>> = Lazy::new(|| RwLock::new(None));
 
-  Some(runtime)
+/// Create the `Runtime` with setting the number of worker threads.
+///
+/// `threads` must be greater than 0. default [`num_cpus::get_physical`]
+pub fn create_multi_threads_runtime(threads: Option<usize>) -> () {
+  let mut rt = RT.try_write().unwrap();
+
+  if rt.is_none() {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+      .worker_threads(threads.unwrap_or(num_cpus::get_physical()))
+      .enable_all()
+      .build()
+      .expect("Tokio create multi thread failed");
+    *rt = Some(runtime)
+  }
 }
 
-pub static RT: Lazy<RwLock<Option<Runtime>>> = Lazy::new(|| RwLock::new(None));
-
-/// Ensure that the Tokio runtime is initialized. If not 
-pub(crate) fn ensure_runtime() {
-  let mut rt = RT.try_write().unwrap();
-  if rt.is_none() {
-    *rt = create_multi_threads_runtime(None);
-  }
+/// Enters the Tokio runtime context.
+#[inline]
+pub fn enter_runtime<F: FnOnce() -> T, T>(f: F) -> T {
+  let _rt_guard = RT.try_read().unwrap().as_ref().unwrap().enter();
+  f()
 }
 
 /// Spawns a future onto the Tokio runtime.
@@ -29,19 +36,8 @@ pub(crate) fn ensure_runtime() {
 /// To avoid undefined behavior and memory corruptions.
 pub fn spawn<F>(fut: F) -> tokio::task::JoinHandle<F::Output>
 where
-  F: 'static + Send + Future<Output = ()>,
+  F: Future + Send + 'static,
+  F::Output: Send + 'static,
 {
   RT.try_read().unwrap().as_ref().unwrap().spawn(fut)
 }
-
-/// Runs a future to completion
-/// This is blocking, meaning that it pauses other execution until the future is complete,
-/// only use it when it is absolutely necessary, in other places use async functions instead.
-pub fn block_on<F>(fut: F) -> F::Output
-where
-  F: 'static + Send + Future<Output = ()>,
-{
-  RT.read().unwrap().as_ref().unwrap().block_on(fut)
-}
-
-

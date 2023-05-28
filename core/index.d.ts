@@ -6,6 +6,7 @@
 export interface ListenOptions {
   port: number
   host: string
+  workers?: number
 }
 export interface JsResponse {
   body?: string

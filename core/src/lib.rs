@@ -1,22 +1,24 @@
 #![deny(clippy::all)]
 
+mod gadgets;
 mod tokio_threads_runtime;
 
+use gadgets::u32_2_usize;
 use http_body_util::{combinators::BoxBody, BodyExt, Full};
 use hyper::{
   body::{Body, Bytes},
   server::conn::http1,
   service::service_fn,
-  Request, Response,
+  Request, Response, StatusCode,
 };
-use std::net::{IpAddr, SocketAddr};
-use tokio_threads_runtime::{create_multi_threads_runtime, RT};
-
 use napi::{
+  bindgen_prelude::*,
   threadsafe_function::{ErrorStrategy, ThreadSafeCallContext, ThreadsafeFunction},
-  JsFunction,
 };
+
+use std::net::{IpAddr, SocketAddr};
 use tokio::net::TcpListener;
+use tokio_threads_runtime::{create_multi_threads_runtime, enter_runtime};
 
 #[macro_use]
 extern crate napi_derive;
@@ -32,6 +34,7 @@ fn full<T: Into<Bytes>>(chunk: T) -> BoxBody<Bytes, hyper::Error> {
 pub struct ListenOptions {
   pub port: u16,
   pub host: String,
+  pub workers: Option<u32>,
 }
 
 #[napi(object)]
@@ -53,20 +56,25 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
       let uri = format!("{}", &parts.uri);
       let headers = format!("{:?}", &parts.headers);
       let body_size_hint = body.size_hint().upper().map(|s| s as i64);
-      let body = ctx.env.create_external(body, body_size_hint)?;
+      // let body = ctx.env.create_external(body, body_size_hint)?;
       let mut parts = ctx.env.create_object()?;
+
+      // body.poll_frame()
+
+      // body.poll_frame();
+
+      // body.
 
       parts.set("version", version).unwrap();
       parts.set("uri", uri).unwrap();
       parts.set("method", method).unwrap();
       parts.set("headers", headers).unwrap();
-      parts.set("body", body).unwrap();
 
       Ok(vec![parts])
     })?;
 
   let start = async move {
-    let ListenOptions { host, port } = options;
+    let ListenOptions { host, port, .. } = options;
     let host: IpAddr = host.parse().unwrap();
     let addr = SocketAddr::from((host, port));
 
@@ -84,9 +92,34 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
             .call_async::<Option<JsResponse>>(Ok(req))
             .await
             .unwrap();
-          Ok::<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>(Response::new(full(
-            js_res.unwrap().body.unwrap(),
-          )))
+
+          let js_body = js_res.unwrap().body.unwrap();
+
+          let mut res;
+
+          res = Response::builder();
+
+          res = res.status(StatusCode::ACCEPTED);
+
+          // let res = Response::builder();
+
+          // let res = res.status(StatusCode::ACCEPTED);
+
+          // let r = RefCell::new(Response::builder());
+
+          // r.borrow().status(StatusCode::ACCEPTED);
+
+          // res.
+
+          // Ok::<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>(Response::new(full(
+          //   js_res.unwrap().body.unwrap(),
+          // )))
+          res.body(full(""))
+
+          // Ok(res.body(full("")))
+          // Ok::<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>(Response::new(full(
+          //   ,
+          // )))
         }
       });
 
@@ -105,15 +138,11 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
     Ok::<(), napi::Error>(())
   };
 
-  {
-    let mut rt = RT.try_write().unwrap();
+  let threads = u32_2_usize(options.workers);
 
-    if rt.is_none() {
-      *rt = create_multi_threads_runtime(None);
-    }
-  }
+  create_multi_threads_runtime(threads);
 
-  RT.try_read().unwrap().as_ref().unwrap().spawn(start);
+  enter_runtime(|| tokio_threads_runtime::spawn(start));
 
   Ok::<(), napi::Error>(())
 }
