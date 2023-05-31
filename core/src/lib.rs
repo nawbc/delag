@@ -3,7 +3,7 @@
 mod gadgets;
 mod tokio_threads_runtime;
 
-use gadgets::u32_2_usize;
+use gadgets::{headers_2_hashmap, u32_2_usize};
 use http_body_util::{combinators::BoxBody, BodyExt, Full};
 use hyper::{
   body::{Body, Bytes},
@@ -54,16 +54,11 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
       let version = format!("{:?}", &parts.version);
       let method = parts.method.as_str();
       let uri = format!("{}", &parts.uri);
-      let headers = format!("{:?}", &parts.headers);
+      let headers = headers_2_hashmap(&parts.headers);
       let body_size_hint = body.size_hint().upper().map(|s| s as i64);
       // let body = ctx.env.create_external(body, body_size_hint)?;
       let mut parts = ctx.env.create_object()?;
-
-      // body.poll_frame()
-
-      // body.poll_frame();
-
-      // body.
+      // body.boxed()
 
       parts.set("version", version).unwrap();
       parts.set("uri", uri).unwrap();
@@ -81,7 +76,7 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
     let listener = TcpListener::bind(addr).await?;
 
     loop {
-      let (stream, _) = listener.accept().await?;
+      let (tcp_stream, _) = listener.accept().await?;
       let ts_fn = ts_fn.clone();
 
       let service = service_fn(move |req: HyperRequest| {
@@ -125,7 +120,7 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
 
       tokio::task::spawn(async move {
         match http1::Builder::new()
-          .serve_connection(stream, service)
+          .serve_connection(tcp_stream, service)
           .await
         {
           Ok(()) => {}

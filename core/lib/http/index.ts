@@ -1,137 +1,137 @@
-// Copyright Han, Deskbtm. and other Delag contributors.
-// SPDX-License-Identifier: Apache-2.0
+// // Copyright Han, Deskbtm. and other Delag contributors.
+// // SPDX-License-Identifier: Apache-2.0
 
-import { EventEmitter } from 'events';
-import * as RsDelag from '../../index';
-import { Readable, Writable } from 'stream';
-import { DealgListenOptions } from './http.interface';
-import { is } from '../gadget';
-import { debuglog } from 'node:util';
-// import { createServer } from 'node:http';
-//  function createServer<
-//    Request extends typeof IncomingMessage = typeof IncomingMessage,
-//    Response extends typeof ServerResponse = typeof ServerResponse,
-//  >(
-//    requestListener?: RequestListener<Request, Response>,
-//  ): Server<Request, Response>;
-//  function createServer<
-//    Request extends typeof IncomingMessage = typeof IncomingMessage,
-//    Response extends typeof ServerResponse = typeof ServerResponse,
-//  >(
-//    options: ServerOptions<Request, Response>,
-//    requestListener?: RequestListener<Request, Response>,
-//  ): Server<Request, Response>;
+// import { EventEmitter } from 'events';
+// import * as RsDelag from '../../index';
+// import { Readable, Writable } from 'stream';
+// import { DealgListenOptions } from './http.interface';
+// import { is } from '../gadget';
+// import { debuglog } from 'node:util';
 
-let debug = debuglog('delag:http');
+// //  function createServer<
+// //    Request extends typeof IncomingMessage = typeof IncomingMessage,
+// //    Response extends typeof ServerResponse = typeof ServerResponse,
+// //  >(
+// //    requestListener?: RequestListener<Request, Response>,
+// //  ): Server<Request, Response>;
+// //  function createServer<
+// //    Request extends typeof IncomingMessage = typeof IncomingMessage,
+// //    Response extends typeof ServerResponse = typeof ServerResponse,
+// //  >(
+// //    options: ServerOptions<Request, Response>,
+// //    requestListener?: RequestListener<Request, Response>,
+// //  ): Server<Request, Response>;
 
-class IncomingMessage extends Readable {
-  constructor(req) {
-    super();
-  }
-}
+// let debug = debuglog('delag:http');
 
-class OutgoingMessage extends Writable {}
+// class IncomingMessage extends Readable {
+//   constructor(req) {
+//     super();
+//   }
+// }
 
-export class Server extends EventEmitter {
-  private _server;
+// class OutgoingMessage extends Writable {}
 
-  static DEFAULT_IPV4_ADDR = '0.0.0.0';
-  static DEFAULT_IPV6_ADDR = '::';
-  static DEFAULT_PORT = 80;
+// export class Server extends EventEmitter {
+//   private _server;
 
-  constructor(options, callback) {
-    super();
-  }
+//   static DEFAULT_IPV4_ADDR = '0.0.0.0';
+//   static DEFAULT_IPV6_ADDR = '::';
+//   static DEFAULT_PORT = 80;
 
-  // Copyright Joyent, Inc. and other Node contributors.
-  private normalizeParams(p: any): [DealgListenOptions, (() => void) | null] {
-    let options: DealgListenOptions = {
-      port: Server.DEFAULT_PORT,
-      host: Server.DEFAULT_IPV6_ADDR,
-    };
+//   constructor(options, callback) {
+//     super();
+//   }
 
-    if (void 0 == p) {
-      return [options, null];
-    }
+//   // Copyright Joyent, Inc. and other Node contributors.
+//   private normalizeParams(p: any): [DealgListenOptions, (() => void) | null] {
+//     let options: DealgListenOptions = {
+//       port: Server.DEFAULT_PORT,
+//       host: Server.DEFAULT_IPV6_ADDR,
+//     };
 
-    const p0 = p[0];
+//     if (void 0 == p) {
+//       return [options, null];
+//     }
 
-    if (is.object(p0)) {
-      options = Object.assign({}, options, p0);
-    } else if (is.string(p0)) {
-      options.path = p0;
-    } else {
-      const p1 = p[1];
-      options.port = p0;
-      if (p.length > 1 && is.string(p1)) {
-        options.host = p1;
-      }
-    }
+//     const p0 = p[0];
 
-    const cb = p[p.length - 1];
+//     if (is.object(p0)) {
+//       options = Object.assign({}, options, p0);
+//     } else if (is.string(p0)) {
+//       options.path = p0;
+//     } else {
+//       const p1 = p[1];
+//       options.port = p0;
+//       if (p.length > 1 && is.string(p1)) {
+//         options.host = p1;
+//       }
+//     }
 
-    let arr;
+//     const cb = p[p.length - 1];
 
-    if (!is.function(cb)) {
-      arr = [options, null];
-    } else {
-      arr = [options, cb];
-    }
+//     let arr;
 
-    return arr;
-  }
+//     if (!is.function(cb)) {
+//       arr = [options, null];
+//     } else {
+//       arr = [options, cb];
+//     }
 
-  public address;
+//     return arr;
+//   }
 
-  /**
-   * Start a server listening for connections.
-   *
-   * @param port
-   * @param hostname
-   * @param backlog
-   * @param listener
-   */
-  public listen(
-    port?: number,
-    hostname?: string,
-    backlog?: number,
-    listener?: () => void,
-  ): this;
-  public listen(port?: number, hostname?: string, listener?: () => void): this;
-  public listen(port?: number, backlog?: number, listener?: () => void): this;
-  public listen(port?: number, listener?: () => void): this;
-  public listen(path: string, backlog?: number, listener?: () => void): this;
-  public listen(path: string, listener?: () => void): this;
-  public listen(options: DealgListenOptions, listener?: () => void): this;
-  public listen(...params): this {
-    const [options, callback] = this.normalizeParams(params);
-    const { port, host } = options as Pick<
-      Required<DealgListenOptions>,
-      'host' | 'port'
-    >;
+//   public address;
 
-    try {
-      this._server = RsDelag.serve(
-        {
-          port,
-          host,
-        },
-        (err, req) => {
-          this.emit('request', req);
+//   /**
+//    * Start a server listening for connections.
+//    *
+//    * @param port
+//    * @param hostname
+//    * @param backlog
+//    * @param listener
+//    */
+//   public listen(
+//     port?: number,
+//     hostname?: string,
+//     backlog?: number,
+//     listener?: () => void,
+//   ): this;
+//   public listen(port?: number, hostname?: string, listener?: () => void): this;
+//   public listen(port?: number, backlog?: number, listener?: () => void): this;
+//   public listen(port?: number, listener?: () => void): this;
+//   public listen(path: string, backlog?: number, listener?: () => void): this;
+//   public listen(path: string, listener?: () => void): this;
+//   public listen(options: DealgListenOptions, listener?: () => void): this;
+//   public listen(...params): this {
+//     const [options, callback] = this.normalizeParams(params);
+//     const { port, host } = options as Pick<
+//       Required<DealgListenOptions>,
+//       'host' | 'port'
+//     >;
 
-          return {
-            body: 'demo',
-          };
-        },
-      );
-    } catch (error) {
-      this.emit('clientError', error);
-    }
+//     try {
+//       this._server = RsDelag.serve(
+//         {
+//           port,
+//           host,
+//         },
+//         (err, req) => {
+//           this.emit('request', req);
 
-    return this;
-  }
-}
+//           return {
+//             body: 'demo',
+//           };
+//         },
+//       );
+//     } catch (error) {
+//       this.emit('clientError', error);
+//     }
 
-export const createServer = function name(
-  requestListener: (req, res) => any,
-) {};
+//     return this;
+//   }
+// }
+
+// // export const createServer = function name(
+// //   requestListener: (req, res) => any,
+// // ) {};

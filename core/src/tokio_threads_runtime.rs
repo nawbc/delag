@@ -5,7 +5,7 @@ use std::{future::Future, sync::RwLock};
 use once_cell::sync::Lazy;
 use tokio::runtime::Runtime;
 
-static RT: Lazy<RwLock<Option<Runtime>>> = Lazy::new(|| RwLock::new(None));
+pub(self) static RT: Lazy<RwLock<Option<Runtime>>> = Lazy::new(|| RwLock::new(None));
 
 /// Create the `Runtime` with setting the number of worker threads.
 ///
@@ -18,7 +18,8 @@ pub fn create_multi_threads_runtime(threads: Option<usize>) -> () {
       .worker_threads(threads.unwrap_or(num_cpus::get_physical()))
       .enable_all()
       .build()
-      .expect("Tokio create multi thread failed");
+      .expect("Tokio creates multi threads failed");
+
     *rt = Some(runtime)
   }
 }
@@ -41,3 +42,16 @@ where
 {
   RT.try_read().unwrap().as_ref().unwrap().spawn(fut)
 }
+
+// pub fn shutdown_now() {
+//   {
+//     let rt = RT.try_read().unwrap();
+
+//     *rt.unwrap().shutdown_background();
+//   }
+
+//   {
+//     let mut rt = RT.try_write().unwrap();
+//     *rt = None;
+//   }
+// }

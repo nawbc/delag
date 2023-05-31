@@ -30,6 +30,7 @@
     "@napi-rs/cli": "^2.15.2",
     "@types/node": "18",
     "ava": "^5.1.1",
+    "typedoc": "^0.24.7",
     "typescript": "5.0.4"
   },
   "ava": {
@@ -46,7 +47,8 @@
     "prepublishOnly": "napi prepublish -t npm",
     "test": "ava",
     "universal": "napi universal",
-    "version": "napi version"
+    "version": "napi version",
+    "gen:doc": "typedoc ./lib --readme ./README.md"
   },
   "optionalDependencies": {
     "@delag/core-android-arm-eabi": "0.0.0",
