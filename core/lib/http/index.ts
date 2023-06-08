@@ -3,7 +3,7 @@
 
 // import { EventEmitter } from 'events';
 // import * as RsDelag from '../../index';
-// import { Readable, Writable } from 'stream';
+// import { createServer } from 'node:http';
 // import { DealgListenOptions } from './http.interface';
 // import { is } from '../gadget';
 // import { debuglog } from 'node:util';

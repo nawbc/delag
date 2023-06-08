@@ -42,16 +42,3 @@ where
 {
   RT.try_read().unwrap().as_ref().unwrap().spawn(fut)
 }
-
-// pub fn shutdown_now() {
-//   {
-//     let rt = RT.try_read().unwrap();
-
-//     *rt.unwrap().shutdown_background();
-//   }
-
-//   {
-//     let mut rt = RT.try_write().unwrap();
-//     *rt = None;
-//   }
-// }

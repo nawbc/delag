@@ -36,6 +36,28 @@ import { Readable, Writable } from 'stream';
 //   //   .listen(8080);
 // }
 Delag.serve({ port: 8080, host: '127.0.0.1' }, (err, req) => {
+  console.log(req);
+
+  const emitter = new EventEmitter();
+
+  emitter.on('data', (err, data) => {
+    console.log(err, data);
+  });
+
+  req.body(emitter.emit.bind(emitter));
+
+  // let a = req.body((...b) => {
+  //   console.log(b);
+  // });
+
+  // console.log(a);
+
+  // let a = req.body((...a) => {
+  //   console.log('================');
+  //   console.log(a);
+  // });
+  // console.log(a);
+
   return {
     body: 'Hello, World',
     headers: {

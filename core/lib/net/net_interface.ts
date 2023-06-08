@@ -29,7 +29,22 @@ export interface DelagListenOptions {
    *
    * @default os.cpus().length
    */
-  workers?: number;
+  workers?: number | undefined;
+
+  /**
+   * @todo
+   */
+  readableAll?: boolean | undefined;
+
+  /**
+   * @todo
+   */
+  writableAll?: boolean | undefined;
+
+  /**
+   * @todo
+   */
+  exclusive?: boolean | undefined;
 
   // /**
   //  * Set max number of threads for each worker's blocking task thread pool.
@@ -48,7 +63,7 @@ export interface DelagListenOptions {
   // workerMaxBlockingThreads?: number;
 
   /**
-   * @todo 
+   * @todo
    */
   signal?: AbortSignal | undefined;
 }

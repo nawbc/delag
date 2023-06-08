@@ -6,18 +6,26 @@ mod tokio_threads_runtime;
 use gadgets::{headers_2_hashmap, u32_2_usize};
 use http_body_util::{combinators::BoxBody, BodyExt, Full};
 use hyper::{
-  body::{Body, Bytes},
+  body::{Bytes, Incoming},
   server::conn::http1,
   service::service_fn,
-  Request, Response, StatusCode,
+  Request, Response,
 };
 use napi::{
   bindgen_prelude::*,
-  threadsafe_function::{ErrorStrategy, ThreadSafeCallContext, ThreadsafeFunction},
+  threadsafe_function::{
+    ErrorStrategy, ThreadSafeCallContext, ThreadsafeFunction, ThreadsafeFunctionCallMode,
+  },
+  CallContext, JsString,
 };
 
-use std::net::{IpAddr, SocketAddr};
-use tokio::net::TcpListener;
+use std::{
+  cell::RefCell,
+  net::{IpAddr, SocketAddr},
+  ptr,
+  sync::{Arc, RwLock},
+};
+use tokio::net::{TcpListener, TcpStream};
 use tokio_threads_runtime::{create_multi_threads_runtime, enter_runtime};
 
 #[macro_use]
@@ -45,25 +53,71 @@ pub struct JsResponse {
 
 type HyperRequest = Request<hyper::body::Incoming>;
 
+extern "C" fn on_abort(
+  env: sys::napi_env,
+  callback_info: sys::napi_callback_info,
+) -> sys::napi_value {
+  dbg!("========");
+  ptr::null_mut()
+}
+
 #[napi]
 pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
   let ts_fn: ThreadsafeFunction<_, ErrorStrategy::CalleeHandled> = callback
     .create_threadsafe_function(0, |ctx: ThreadSafeCallContext<HyperRequest>| {
-      let (parts, body) = ctx.value.into_parts();
+      let (parts, incoming) = ctx.value.into_parts();
+      let env = ctx.env;
 
       let version = format!("{:?}", &parts.version);
       let method = parts.method.as_str();
       let uri = format!("{}", &parts.uri);
       let headers = headers_2_hashmap(&parts.headers);
-      let body_size_hint = body.size_hint().upper().map(|s| s as i64);
-      // let body = ctx.env.create_external(body, body_size_hint)?;
       let mut parts = ctx.env.create_object()?;
-      // body.boxed()
+      let body_cb = env
+        .create_function_from_closure("body", move |ctx: CallContext| {
+          let emitter = ctx.get::<JsFunction>(0).unwrap();
+          // tokio::runtime::Runtime::new()
+          let rt = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
+          let _guard = rt.enter();
+          // let incoming = &incoming;
+          // let cell_incoming = RwLock::new(RefCell::new(incoming));
+          // tokio::task::spawn_blocking(|| async {
+          //   let a = &incoming;
+          // });
+
+          let incoming = Arc::new(RwLock::new(RefCell::new(incoming)));
+
+          tokio::spawn(async move {
+            let mut d = incoming.write().unwrap();
+          });
+
+          // let b1 = bb;
+
+          // let a = incoming;
+
+          // while let Some(item) = incoming.frame().await {
+          //   let data = item.unwrap().into_data();
+
+          //   let b1 = data.unwrap();
+          //   let b2: Vec<u8> = b1.into();
+          // }
+          let js_string_hello = ctx.env.create_string("data".as_ref())?;
+          let js_string_hello1 = ctx.env.create_string("data2132131231".as_ref())?;
+          emitter
+            .call(None, &[&js_string_hello, &js_string_hello1])
+            .unwrap();
+
+          Ok(())
+        })
+        .unwrap();
 
       parts.set("version", version).unwrap();
       parts.set("uri", uri).unwrap();
       parts.set("method", method).unwrap();
       parts.set("headers", headers).unwrap();
+      parts.set("body", body_cb).unwrap();
 
       Ok(vec![parts])
     })?;
@@ -76,7 +130,7 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
     let listener = TcpListener::bind(addr).await?;
 
     loop {
-      let (tcp_stream, _) = listener.accept().await?;
+      let (tcp_stream, _): (TcpStream, SocketAddr) = listener.accept().await?;
       let ts_fn = ts_fn.clone();
 
       let service = service_fn(move |req: HyperRequest| {
@@ -88,13 +142,13 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
             .await
             .unwrap();
 
-          let js_body = js_res.unwrap().body.unwrap();
+          // let js_body = js_res.unwrap().body.unwrap();
 
-          let mut res;
+          // let mut res;
 
-          res = Response::builder();
+          // res = Response::builder();
 
-          res = res.status(StatusCode::ACCEPTED);
+          // res = res.status(StatusCode::ACCEPTED);
 
           // let res = Response::builder();
 
@@ -104,17 +158,12 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
 
           // r.borrow().status(StatusCode::ACCEPTED);
 
-          // res.
-
-          // Ok::<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>(Response::new(full(
-          //   js_res.unwrap().body.unwrap(),
-          // )))
-          res.body(full(""))
+          Ok::<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>(Response::new(full(
+            js_res.unwrap().body.unwrap(),
+          )))
 
           // Ok(res.body(full("")))
-          // Ok::<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>(Response::new(full(
-          //   ,
-          // )))
+          // Ok::<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error>(Response::new(full("")))
         }
       });
 
@@ -136,8 +185,6 @@ pub fn serve(options: ListenOptions, callback: JsFunction) -> napi::Result<()> {
   let threads = u32_2_usize(options.workers);
 
   create_multi_threads_runtime(threads);
-
   enter_runtime(|| tokio_threads_runtime::spawn(start));
-
   Ok::<(), napi::Error>(())
 }

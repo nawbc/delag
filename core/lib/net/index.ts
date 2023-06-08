@@ -15,7 +15,7 @@ class Socket extends EventEmitter {
 }
 
 export class Server extends EventEmitter {
-  private _server;
+  #server;
 
   static readonly DEFAULT_IPV4_ADDR = '0.0.0.0';
   static readonly DEFAULT_IPV6_ADDR = '::';
@@ -26,7 +26,7 @@ export class Server extends EventEmitter {
   }
 
   // Copyright Joyent, Inc. and other Node contributors.
-  private normalizeParams(p: any): [DelagListenOptions, (() => void) | null] {
+  #normalizeParams(p: any): [DelagListenOptions, (() => void) | null] {
     let options: DelagListenOptions = {
       port: Server.DEFAULT_PORT,
       host: Server.DEFAULT_IPV6_ADDR,
@@ -68,7 +68,7 @@ export class Server extends EventEmitter {
   /**
    * @todo Support listen in cluster.
    */
-  private clusterListen() {}
+  #clusterListen() {}
 
   /**
    * Start a server listening for connections.
@@ -93,7 +93,7 @@ export class Server extends EventEmitter {
   public listen(path: string, listener?: () => void): this;
   public listen(options: DelagListenOptions, listener?: () => void): this;
   public listen(...params): this {
-    const [options, callback] = this.normalizeParams(params);
+    const [options, callback] = this.#normalizeParams(params);
 
     const { port, host } = options as Pick<
       Required<DelagListenOptions>,
@@ -101,7 +101,7 @@ export class Server extends EventEmitter {
     >;
 
     try {
-      this._server = RsDelag.serve(
+      this.#server = RsDelag.serve(
         {
           port,
           host,
