@@ -14,6 +14,15 @@ import * as Delag from '../index.js';
 import { EventEmitter } from 'events';
 import { Readable, Writable } from 'stream';
 
+// let a = Delag.callbackArgsWithCallEmit(async (v) => {
+//   console.debug(v);
+//   return new Promise((r) => setTimeout(() => r(100), 3000));
+// });
+
+// let b = await a;
+
+// console.debug(b);
+
 // import { ReadableStream, WritableStream } from 'node:stream/web';
 
 // class Response extends Write {}
@@ -36,15 +45,21 @@ import { Readable, Writable } from 'stream';
 //   //   .listen(8080);
 // }
 Delag.serve({ port: 8080, host: '127.0.0.1' }, (err, req) => {
-  console.log(req);
+  // console.log(req);
+
+  if (err) {
+    console.log(err, '======');
+  }
 
   const emitter = new EventEmitter();
 
-  emitter.on('data', (err, data) => {
-    console.log(err, data);
+  emitter.on('data', (data) => {
+    console.log(data.toString('utf8'));
   });
 
-  req.body(emitter.emit.bind(emitter));
+  // req._bodyCallEmit(emitter.emit.bind(emitter));
+
+  // console.log('=========');
 
   // let a = req.body((...b) => {
   //   console.log(b);
@@ -66,36 +81,36 @@ Delag.serve({ port: 8080, host: '127.0.0.1' }, (err, req) => {
   };
 });
 
-class IncomingMessage extends Readable {
-  constructor(req, opts) {}
-}
+// class IncomingMessage extends Readable {
+//   constructor(req, opts) {}
+// }
 
-class OutgoingMessage extends Writable {}
+// class OutgoingMessage extends Writable {}
 
-class Server extends EventEmitter {
-  constructor(options, callback) {
-    super();
+// class Server extends EventEmitter {
+//   constructor(options, callback) {
+//     super();
 
-    this.on('request', callback);
-  }
+//     this.on('request', callback);
+//   }
 
-  //   listen(port: number, hostname: string, backlog: number, callback?: () => void): http.Server;
-  // listen(port: number, hostname: string, callback?: () => void): http.Server;
-  // listen(port: number, callback?: () => void): http.Server;
-  // listen(callback?: () => void): http.Server;
-  // listen(path: string, callback?: () => void): http.Server;
-  // listen(handle: any, listeningListener?: () => void): http.Server;
-  listen() {
-    Delag.serve((err, req) => {
-      let r = req;
-      this.emit('', req);
+//   //   listen(port: number, hostname: string, backlog: number, callback?: () => void): http.Server;
+//   // listen(port: number, hostname: string, callback?: () => void): http.Server;
+//   // listen(port: number, callback?: () => void): http.Server;
+//   // listen(callback?: () => void): http.Server;
+//   // listen(path: string, callback?: () => void): http.Server;
+//   // listen(handle: any, listeningListener?: () => void): http.Server;
+//   listen() {
+//     Delag.serve((err, req) => {
+//       let r = req;
+//       this.emit('', req);
 
-      // return {
-      //   data: 'Hello, World',
-      //   headers: {
-      //     Cookie: 'xxx=xxxx',
-      //   },
-      // };
-    });
-  }
-}
+//       // return {
+//       //   data: 'Hello, World',
+//       //   headers: {
+//       //     Cookie: 'xxx=xxxx',
+//       //   },
+//       // };
+//     });
+//   }
+// }

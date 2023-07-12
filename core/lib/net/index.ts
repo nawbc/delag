@@ -121,5 +121,5 @@ export class Server extends EventEmitter {
     return this;
   }
 
-  public close() {}
+  public close(...args: []) {}
 }

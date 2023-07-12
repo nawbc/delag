@@ -24,6 +24,8 @@ log = "0.4.18"
 [dependencies]
 num_cpus = "1.15.0"
 log = { workspace = true }
+futures-core = { workspace = true }
+futures-util = { workspace = true }
 hyper = { workspace = true, features = ["full"] }
 tokio = { workspace = true, features = [
   "macros",
@@ -37,7 +39,7 @@ tokio = { workspace = true, features = [
 serde_json = { workspace = true }
 once_cell = { workspace = true }
 http-body-util = { workspace = true }
-napi = { version = "2.12.0", default-features = false, features = [
+napi = { git = "https://github.com/nawbc/napi-rs.git", default-features = false, features = [
   "tokio_fs",
   "napi8",
   "tokio_rt",
@@ -49,8 +51,20 @@ napi = { version = "2.12.0", default-features = false, features = [
   "compat-mode",
   "async",
 ] }
+# napi = { version = "2.13.1", default-features = false, features = [
+#   "tokio_fs",
+#   "napi8",
+#   "tokio_rt",
+#   "serde-json",
+#   "async",
+#   "experimental",
+#   "latin1",
+#   "chrono_date",
+#   "compat-mode",
+#   "async",
+# ] }
 napi-sys = "2.2.3"
-napi-derive = "2.12.2"
+napi-derive = "2.13.0"
 tokio-rustls = "0.24.0"
 rustls-pemfile = "1.0.2"
 bytes = "1.4.0"

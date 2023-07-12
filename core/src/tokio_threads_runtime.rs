@@ -5,13 +5,14 @@ use std::{future::Future, sync::RwLock};
 use once_cell::sync::Lazy;
 use tokio::runtime::Runtime;
 
-pub(self) static RT: Lazy<RwLock<Option<Runtime>>> = Lazy::new(|| RwLock::new(None));
+pub(in crate::tokio_threads_runtime) static RT: Lazy<RwLock<Option<Runtime>>> =
+  Lazy::new(|| RwLock::new(None));
 
 /// Create the `Runtime` with setting the number of worker threads.
 ///
 /// `threads` must be greater than 0. default [`num_cpus::get_physical`]
 pub fn create_multi_threads_runtime(threads: Option<usize>) -> () {
-  let mut rt = RT.try_write().unwrap();
+  let mut rt = RT.write().unwrap();
 
   if rt.is_none() {
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -20,14 +21,14 @@ pub fn create_multi_threads_runtime(threads: Option<usize>) -> () {
       .build()
       .expect("Tokio creates multi threads failed");
 
-    *rt = Some(runtime)
+    *rt = Some(runtime);
   }
 }
 
 /// Enters the Tokio runtime context.
 #[inline]
 pub fn enter_runtime<F: FnOnce() -> T, T>(f: F) -> T {
-  let _rt_guard = RT.try_read().unwrap().as_ref().unwrap().enter();
+  let _rt_guard = RT.read().unwrap().as_ref().unwrap().enter();
   f()
 }
 
@@ -40,5 +41,5 @@ where
   F: Future + Send + 'static,
   F::Output: Send + 'static,
 {
-  RT.try_read().unwrap().as_ref().unwrap().spawn(fut)
+  RT.read().unwrap().as_ref().unwrap().spawn(fut)
 }
