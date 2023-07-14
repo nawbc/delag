@@ -10,6 +10,7 @@
 // server.listen(8080, '127.0.0.1');
 
 // import test from 'ava';
+import { Socket } from 'net';
 import * as Delag from '../index.js';
 import { EventEmitter } from 'events';
 import { Readable, Writable } from 'stream';
@@ -44,6 +45,9 @@ import { Readable, Writable } from 'stream';
 //   //   })
 //   //   .listen(8080);
 // }
+
+console.log(process.pid);
+console.log(process.ppid);
 Delag.serve({ port: 8080, host: '127.0.0.1' }, (err, req) => {
   // console.log(req);
 
@@ -51,15 +55,25 @@ Delag.serve({ port: 8080, host: '127.0.0.1' }, (err, req) => {
     console.log(err, '======');
   }
 
-  const emitter = new EventEmitter();
+  let fd = Number(req.fd);
+  // let socket = new Socket({
+  //   fd,
+  //   readable: true,
+  //   writable: true,
+  // });
 
-  emitter.on('data', (data) => {
-    console.log(data.toString('utf8'));
-  });
+  // console.log(socket);
+  console.log(req);
+
+  // const emitter = new EventEmitter();
+
+  // emitter.on('data', (data) => {
+  //   // console.log(data.toString('utf8'));
+  // });
 
   // req._bodyCallEmit(emitter.emit.bind(emitter));
 
-  // console.log('=========');
+  console.log('=========');
 
   // let a = req.body((...b) => {
   //   console.log(b);
