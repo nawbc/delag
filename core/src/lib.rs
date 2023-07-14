@@ -22,6 +22,7 @@ use std::{
   net::{IpAddr, SocketAddr},
   sync::Arc,
   thread,
+  time::Duration,
 };
 use tokio::net::{TcpListener, TcpStream};
 use tokio_threads_runtime::{create_multi_threads_runtime, enter_runtime};
@@ -96,20 +97,21 @@ pub fn serve(
           let s_ctx = UnSafeCallContext::new(ctx);
 
           rt.block_on(async move {
-            // let mut safe_incoming = incoming.write().await;
-            // let s = s_ctx;
+            let mut safe_incoming = incoming.write().await;
+            let s = s_ctx;
+            tokio::time::sleep(Duration::from_secs(4)).await;
 
-            // while let Some(item) = safe_incoming.frame().await {
-            //   let data = item.unwrap().into_data().unwrap();
-            //   let b: Vec<u8> = data.into();
-            //   let c = s.0.clone();
-            //   let emitter = c.get::<JsFunction>(0)?;
+            while let Some(item) = safe_incoming.frame().await {
+              let data = item.unwrap().into_data().unwrap();
+              let b: Vec<u8> = data.into();
+              let c = s.0.clone();
+              let emitter = c.get::<JsFunction>(0)?;
 
-            //   let k = c.env.create_string("data".as_ref())?;
-            //   let v = c.env.create_buffer_copy(b)?.into_raw();
+              let k = c.env.create_string("data".as_ref())?;
+              let v = c.env.create_buffer_copy(b)?.into_raw();
 
-            //   emitter.call(None, &[k.into_unknown(), v.into_unknown()])?;
-            // }
+              emitter.call(None, &[k.into_unknown(), v.into_unknown()])?;
+            }
             Ok::<(), napi::Error>(())
           })?;
 
@@ -134,7 +136,7 @@ pub fn serve(
 
     // dbg!(std::thread::current().id());
     let listener = TcpListener::bind(addr).await?;
-    let (tx, rx) = tokio::sync::mpsc::channel::<JsResponse>(10);
+    // let (tx, rx) = tokio::sync::mpsc::channel::<JsResponse>(10);
 
     loop {
       let (tcp_stream, _): (TcpStream, SocketAddr) = listener.accept().await?;
@@ -144,10 +146,10 @@ pub fn serve(
       #[cfg(windows)]
       {
         use std::os::windows::prelude::{AsRawSocket, AsSocket};
-        fd = tcp_stream.as_raw_socket();
-        dbg!(fd);
+        fd = tcp_stream.as_raw_socket() as i64;
+        // dbg!(fd);
         let fd1 = tcp_stream.as_socket();
-        dbg!(&fd1);
+        // dbg!(&fd1);
       }
 
       #[cfg(unix)]
@@ -160,13 +162,13 @@ pub fn serve(
 
       // tcp_stream.as_fd();
 
-      let tx = tx.clone();
+      // let tx = tx.clone();
 
       let service = service_fn(move |req: Hyper1Request| {
         let tsfn = tsfn.clone();
-        let tx = tx.clone();
+        // let tx = tx.clone();
 
-        tsfn.call(Ok((req, fd)), ThreadsafeFunctionCallMode::NonBlocking);
+        // tsfn.call(Ok((req, fd)), ThreadsafeFunctionCallMode::NonBlocking);
         // tsfn.call_with_return_value(
         //   Ok((req, fd)),
         //   ThreadsafeFunctionCallMode::NonBlocking,
@@ -179,6 +181,7 @@ pub fn serve(
         // );
 
         async move {
+          tsfn.call_async::<JsResponse>(Ok((req, fd))).await.unwrap();
           // let js_res = rx.recv().await.unwrap();
           // dbg!("======");
           // let js_res = tsfn.call_async::<JsResponse>(Ok(req)).await.unwrap();
