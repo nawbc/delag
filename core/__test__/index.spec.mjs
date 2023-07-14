@@ -56,14 +56,14 @@ Delag.serve({ port: 8080, host: '127.0.0.1' }, (err, req) => {
   }
 
   let fd = Number(req.fd);
-  // let socket = new Socket({
-  //   fd,
-  //   readable: true,
-  //   writable: true,
-  // });
+  let socket = new Socket({
+    fd,
+    readable: true,
+    writable: true,
+  });
 
   // console.log(socket);
-  console.log(req);
+  // console.log(req);
 
   // const emitter = new EventEmitter();
 
@@ -72,8 +72,6 @@ Delag.serve({ port: 8080, host: '127.0.0.1' }, (err, req) => {
   // });
 
   // req._bodyCallEmit(emitter.emit.bind(emitter));
-
-  console.log('=========');
 
   // let a = req.body((...b) => {
   //   console.log(b);

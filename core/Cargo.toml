@@ -68,6 +68,7 @@ napi-derive = "2.13.0"
 tokio-rustls = "0.24.0"
 rustls-pemfile = "1.0.2"
 bytes = "1.4.0"
+pin-project-lite = "0.2.10"
 
 [build-dependencies]
 napi-build = "2.0.1"

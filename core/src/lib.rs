@@ -2,6 +2,7 @@
 
 mod gadgets;
 mod tokio_threads_runtime;
+mod tokiort;
 
 use gadgets::{headers_2_hashmap, u32_2_usize};
 use http_body_util::{combinators::BoxBody, BodyExt, Full};
@@ -24,6 +25,7 @@ use std::{
 };
 use tokio::net::{TcpListener, TcpStream};
 use tokio_threads_runtime::{create_multi_threads_runtime, enter_runtime};
+use tokiort::TokioIo;
 
 #[macro_use]
 extern crate napi_derive;
@@ -71,7 +73,7 @@ pub fn serve(
   let tsfn: ThreadsafeFunction<_, ErrorStrategy::CalleeHandled> = callback
     .create_threadsafe_function(
       0,
-      move |ts_ctx: ThreadSafeCallContext<(Hyper1Request, u64)>| {
+      move |ts_ctx: ThreadSafeCallContext<(Hyper1Request, i64)>| {
         let fd = ts_ctx.value.1;
         let (parts, incoming) = ts_ctx.value.0.into_parts();
         let env = ts_ctx.env;
@@ -150,7 +152,8 @@ pub fn serve(
 
       #[cfg(unix)]
       {
-        fd = tcp_stream.as_raw_fd();
+        use std::os::fd::AsRawFd;
+        fd = tcp_stream.as_raw_fd() as i64;
       }
 
       // dbg!(fd);
@@ -185,9 +188,11 @@ pub fn serve(
         }
       });
 
+      let io = TokioIo::new(tcp_stream);
+
       tokio::task::spawn(async move {
         match http1::Builder::new()
-          .serve_connection(tcp_stream, service)
+          .serve_connection(io, service)
           .with_upgrades()
           .await
         {
