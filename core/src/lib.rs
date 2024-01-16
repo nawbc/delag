@@ -85,7 +85,6 @@ pub fn serve(
         let headers: std::collections::HashMap<String, String> = headers_2_hashmap(&parts.headers);
         let mut obj = ts_ctx.env.create_object()?;
         let incoming = Arc::new(tokio::sync::RwLock::new(incoming));
-        // dbg!("=");
 
         let body_call_emit = env.create_function_from_closure("_", move |ctx| {
           let rt: tokio::runtime::Runtime = tokio::runtime::Builder::new_multi_thread()
@@ -147,9 +146,7 @@ pub fn serve(
       {
         use std::os::windows::prelude::{AsRawSocket, AsSocket};
         fd = tcp_stream.as_raw_socket() as i64;
-        // dbg!(fd);
         let fd1 = tcp_stream.as_socket();
-        // dbg!(&fd1);
       }
 
       #[cfg(unix)]
@@ -157,13 +154,9 @@ pub fn serve(
         use std::os::fd::AsRawFd;
         fd = tcp_stream.as_raw_fd() as i64;
       }
-
-      // dbg!(fd);
-
-      // tcp_stream.as_fd();
-
-      // let tx = tx.clone();
-
+      tcp_stream.as_fd();
+      let tx = tx.clone();
+      
       let service = service_fn(move |req: Hyper1Request| {
         let tsfn = tsfn.clone();
         // let tx = tx.clone();
@@ -182,11 +175,10 @@ pub fn serve(
 
         async move {
           tsfn.call_async::<JsResponse>(Ok((req, fd))).await.unwrap();
-          // let js_res = rx.recv().await.unwrap();
-          // dbg!("======");
-          // let js_res = tsfn.call_async::<JsResponse>(Ok(req)).await.unwrap();
+          let js_res = rx.recv().await.unwrap();
+          let js_res = tsfn.call_async::<JsResponse>(Ok(req)).await.unwrap();
           Ok::<_, Infallible>(Response::new(full(
-            "", // js_res.body.unwrap(),
+            js_res.body.unwrap(),
           )))
         }
       });
@@ -208,13 +200,9 @@ pub fn serve(
     #[allow(unreachable_code)]
     Ok::<(), napi::Error>(())
   };
-
+  
   // let threads = u32_2_usize(options.workers);
-
-  // dbg!(std::thread::current().id());
-
-  // create_multi_threads_runtime(threads);
-  // enter_runtime(|| tokio_threads_runtime::spawn(start));
+  enter_runtime(|| tokio_threads_runtime::spawn(start));
   env.execute_tokio_future(start, |env, _| env.get_undefined())
   // Ok::<(), napi::Error>(())
 }
