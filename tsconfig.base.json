@@ -1,36 +1,37 @@
 {
-  "compileOnSave": false,
   "compilerOptions": {
-    "allowJs": true,
-    "sourceMap": true,
-    "declaration": true,
-    "moduleResolution": "node16",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "ES2015",
-    "removeComments": true,
-    "module": "Node16",
-    "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": false,
-    "pretty": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": false,
-    "skipDefaultLibCheck": true,
-    "noImplicitOverride": true,
-    "strictBindCallApply": false,
-    "noImplicitReturns": true,
+    "target": "ES2020",
+    "useDefineForClassFields": true,
     "lib": [
       "ESNext",
-      "dom",
-      "dom.iterable"
-    ]
-  },
-  "exclude": [
-    "tmp",
-    "dist",
-    "node_modules",
-    "test",
-  ]
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    /* Bundler mode */
+    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipDefaultLibCheck": true,
+    "strictBindCallApply": true,
+    "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": false,
+    "importHelpers": true,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "removeComments": false,
+    // Interop Constraints
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  }
 }
